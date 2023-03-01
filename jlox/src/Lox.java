@@ -1,0 +1,62 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+
+public class Lox {
+    static boolean hadError = false;
+    public static void main(String[] args) throws IOException {
+        if (args.length > 1) {
+            System.out.println("Usage: jlox [script]");
+            System.exit(64);
+        } else if (args.length == 1) {
+            runFile(args[0]);
+            // when path is given, it runs a script
+        } else {
+            runPrompt();
+            // when nothing is given, run from interactive command line
+        }
+    }
+    private static void runFile(String path) throws IOException {
+        byte[] bytes = Files.readAllBytes(Paths.get(path));
+        // method to read file, read it in as a byte array
+        run(new String(bytes, Charset.defaultCharset()));
+        // run new function with byte array
+    }
+    private static void runPrompt() throws IOException {
+        InputStreamReader input = new InputStreamReader(System.in);
+        BufferedReader reader = new BufferedReader(input);
+        // read input with buffered reader
+    
+        for(;;) {
+            System.out.println(">");
+            String line = reader.readLine();
+            if(line == null) break;
+            run(line);
+            hadError = false;
+        }
+    }
+    private static void run(String source) {
+        Scanner scanner = new Scanner(source);
+        //this is actually a custom made scanner class
+    
+        List<Token> tokens = scanner.scanTokens();
+    
+        for(Token token : tokens) {
+            System.out.println(token);
+        }
+        // print out all token items ...
+        if (hadError) System.exit(65);
+    }
+    static void error(int line, String message) {
+        report(line, "", message);
+    }
+    private static void report(int line, String where, String message) {
+        System.err.println(
+            "[line " + line + "] Error" + where + ": " + message);
+        hadError = true;
+    }
+}
